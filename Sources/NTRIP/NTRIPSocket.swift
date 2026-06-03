@@ -36,7 +36,13 @@ public final class NTRIPSocket: @unchecked Sendable {
     ///   - port: The TCP port.
     /// - Throws: `SocketError` if connection or DNS lookup fails.
     public func connect(host: String, port: Int) async throws {
-        let fd = socket(AF_INET, Int32(SOCK_STREAM.rawValue), 0)
+        #if os(Linux)
+        let sockStream = Int32(SOCK_STREAM.rawValue)
+        #else
+        let sockStream = SOCK_STREAM
+        #endif
+        
+        let fd = socket(AF_INET, sockStream, 0)
         if fd == -1 {
             throw SocketError.creationFailed
         }
@@ -45,7 +51,7 @@ public final class NTRIPSocket: @unchecked Sendable {
         
         var hints = addrinfo()
         hints.ai_family = AF_INET
-        hints.ai_socktype = Int32(SOCK_STREAM.rawValue)
+        hints.ai_socktype = sockStream
         
         var res: UnsafeMutablePointer<addrinfo>?
         let status = getaddrinfo(host, String(port), &hints, &res)
