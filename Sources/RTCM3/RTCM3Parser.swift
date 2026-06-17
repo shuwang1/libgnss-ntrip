@@ -215,6 +215,8 @@ internal final class BitReader {
         return Int(result)
     }
     
+    // ⚡ Bolt: Read bits in byte-sized chunks instead of bit-by-bit
+    // Similar to readInt but returns Int64 with proper sign extension.
     func readInt64(bits: Int) -> Int64? {
         guard var result = readUInt64(bits: bits) else { return nil }
         
