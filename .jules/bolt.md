@@ -5,6 +5,9 @@
 **Learning:** Testing logic involving Foundation (like `Data`) on certain Ubuntu environments with `swiftc` or `swift build` can lead to compiler segmentation faults (Signal 11).
 **Action:** When developing standalone test scripts to verify algorithms locally, avoid `import Foundation`. Instead, use `import Glibc` and replace `Data` with `[UInt8]` arrays to bypass the compiler bug and successfully validate core mathematical logic like CRC computations.
 
+## 2024-05-25 - BitReader Performance Bottleneck
+**Learning:** RTCM3 parsing relies heavily on reading non-aligned bit fields. The original implementation of `BitReader` parsed these one bit at a time using an O(bits) loop, which resulted in unnecessary loops and slower performance.
+**Action:** Replaced the bit-by-bit reading logic with a byte-by-byte approach using bitwise shifting. This transforms the operation from O(bits) to O(bytes), speeding up bit extraction significantly in `Sources/RTCM3/RTCM3Parser.swift`.
 ## 2024-06-16 - RTCM3 BitReader optimization
 **Learning:** In the Swift codebase, `BitReader` class processing for parsing variable-length bit formats inside RTCM3 messages frequently iterated over individual bits, calculating array indices repeatedly. This generated O(N) index computation overhead that dramatically impacted performance when processing large RTCM3 binary payload streams.
 **Action:** Implemented block-based chunking that operates on bytes and applies swift bitwise shift operations and masking to extract bits in blocks, replacing individual bit scanning with efficient chunk operations. In the future, optimize variable-length bit parsing by reading chunks rather than iterating individual bits.
