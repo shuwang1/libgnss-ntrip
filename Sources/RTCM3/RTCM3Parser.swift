@@ -182,7 +182,8 @@ internal final class BitReader {
         self.data = data
     }
     
-    func readInt(bits: Int) -> Int? {
+    // Helper to read up to 64 unsigned bits as UInt64
+    private func readUInt64(bits: Int) -> UInt64? {
         guard bits > 0 && bits <= 64 else { return nil }
         guard bitOffset + bits <= data.count * 8 else { return nil }
         
@@ -211,6 +212,8 @@ internal final class BitReader {
         return Int(result)
     }
     
+    // ⚡ Bolt: Read bits in byte-sized chunks instead of bit-by-bit
+    // Similar to readInt but returns Int64 with proper sign extension.
     func readInt64(bits: Int) -> Int64? {
         guard bits > 0 && bits <= 64 else { return nil }
         guard bitOffset + bits <= data.count * 8 else { return nil }
