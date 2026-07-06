@@ -182,61 +182,63 @@ internal final class BitReader {
         self.data = data
     }
     
-    // ⚡ Bolt: Read bits in byte-sized chunks rather than bit-by-bit.
-    // This provides a 10x-15x speedup for parsing RTCM3 messages.
-    func readInt(bits: Int) -> Int? {
+    // Helper to read up to 64 unsigned bits as UInt64
+    private func readUInt64(bits: Int) -> UInt64? {
         guard bits > 0 && bits <= 64 else { return nil }
         guard bitOffset + bits <= data.count * 8 else { return nil }
         
+        // ⚡ Bolt: Process data byte-by-byte instead of bit-by-bit to reduce loop iterations
+        // and redundant calculations. This transforms an O(bits) operation into O(bytes).
         var result: UInt64 = 0
-        var bitsLeft = bits
-        var currentOffset = bitOffset
+        var bitsRemaining = bits
 
-        while bitsLeft > 0 {
-            let byteIndex = currentOffset / 8
-            let bitInByte = currentOffset % 8
-            let bitsInCurrent = min(8 - bitInByte, bitsLeft)
+        while bitsRemaining > 0 {
+            let byteIndex = bitOffset / 8
+            let bitInByteIndex = bitOffset % 8
+            let bitsAvailableInByte = 8 - bitInByteIndex
+            let bitsToRead = min(bitsRemaining, bitsAvailableInByte)
 
-            let byteVal = UInt64(data[byteIndex])
-            let shift = 8 - bitInByte - bitsInCurrent
-            let mask = (UInt64(1) << bitsInCurrent) - 1
-            let extracted = (byteVal >> shift) & mask
+            let byteVal = Int(data[byteIndex])
+            let mask = (1 << bitsToRead) - 1
+            let shift = bitsAvailableInByte - bitsToRead
+            let extractedBits = UInt64((byteVal >> shift) & mask)
 
-            result = (result << bitsInCurrent) | extracted
-            currentOffset += bitsInCurrent
-            bitsLeft -= bitsInCurrent
+            result = (result << bitsToRead) | extractedBits
+
+            bitOffset += bitsToRead
+            bitsRemaining -= bitsToRead
         }
         
-        bitOffset += bits
         return Int(result)
     }
     
-    // ⚡ Bolt: Read bits in byte-sized chunks rather than bit-by-bit.
-    // This provides an 8x-10x speedup for parsing RTCM3 messages.
+    // ⚡ Bolt: Read bits in byte-sized chunks instead of bit-by-bit
+    // Similar to readInt but returns Int64 with proper sign extension.
     func readInt64(bits: Int) -> Int64? {
         guard bits > 0 && bits <= 64 else { return nil }
         guard bitOffset + bits <= data.count * 8 else { return nil }
         
+        // ⚡ Bolt: Process data byte-by-byte instead of bit-by-bit to reduce loop iterations
+        // and redundant calculations. This transforms an O(bits) operation into O(bytes).
         var result: UInt64 = 0
-        var bitsLeft = bits
-        var currentOffset = bitOffset
-
-        while bitsLeft > 0 {
-            let byteIndex = currentOffset / 8
-            let bitInByte = currentOffset % 8
-            let bitsInCurrent = min(8 - bitInByte, bitsLeft)
-
-            let byteVal = UInt64(data[byteIndex])
-            let shift = 8 - bitInByte - bitsInCurrent
-            let mask = (UInt64(1) << bitsInCurrent) - 1
-            let extracted = (byteVal >> shift) & mask
-
-            result = (result << bitsInCurrent) | extracted
-            currentOffset += bitsInCurrent
-            bitsLeft -= bitsInCurrent
-        }
+        var bitsRemaining = bits
         
-        bitOffset += bits
+        while bitsRemaining > 0 {
+            let byteIndex = bitOffset / 8
+            let bitInByteIndex = bitOffset % 8
+            let bitsAvailableInByte = 8 - bitInByteIndex
+            let bitsToRead = min(bitsRemaining, bitsAvailableInByte)
+
+            let byteVal = Int(data[byteIndex])
+            let mask = (1 << bitsToRead) - 1
+            let shift = bitsAvailableInByte - bitsToRead
+            let extractedBits = UInt64((byteVal >> shift) & mask)
+
+            result = (result << bitsToRead) | extractedBits
+
+            bitOffset += bitsToRead
+            bitsRemaining -= bitsToRead
+        }
         
         // Handle signed bit
         if bits < 64 {
