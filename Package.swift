@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "libntrip-swift",
+    name: "libgnss-ntrip-swift",
     platforms: [
         .macOS("10.15.4"),
         .iOS(.v16)
