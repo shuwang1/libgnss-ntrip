@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
 
@@ -23,10 +23,10 @@ jobs:
     - name: Build Documentation
       run: |
         swift package --allow-writing-to-directory ./docs \
-          generate-documentation \
+          generate-documentation --target libgnss-ntrip-swift \
           --output-path ./docs \
           --transform-for-static-hosting \
-          --hosting-base-path libntrip-swift
+          --hosting-base-path libgnss-ntrip-swift
 
           
     - name: Upload artifact

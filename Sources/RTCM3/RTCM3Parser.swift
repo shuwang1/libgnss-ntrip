@@ -188,6 +188,8 @@ internal final class BitReader {
         guard bits > 0 && bits <= 64 else { return nil }
         guard bitOffset + bits <= data.count * 8 else { return nil }
         
+        // ⚡ Bolt: Process data byte-by-byte instead of bit-by-bit to reduce loop iterations
+        // and redundant calculations. This transforms an O(bits) operation into O(bytes).
         var result: UInt64 = 0
         var remaining = bits
         var currentOffset = bitOffset
@@ -218,6 +220,8 @@ internal final class BitReader {
         return Int(result)
     }
     
+    // ⚡ Bolt: Read bits in byte-sized chunks instead of bit-by-bit
+    // Similar to readInt but returns Int64 with proper sign extension.
     func readInt64(bits: Int) -> Int64? {
         guard var result = readBits(bits: bits) else { return nil }
         

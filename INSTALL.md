@@ -1,6 +1,6 @@
 # Installation and Usage Guide
 
-This guide provides instructions for building, testing, and running the `libntrip-swift` project.
+This guide provides instructions for building, testing, and running the `libgnss-ntrip-swift` project.
 
 ## Prerequisites
 
