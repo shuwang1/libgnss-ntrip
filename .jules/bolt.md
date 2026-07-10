@@ -1,3 +1,6 @@
+## 2024-05-30 - [Table-Driven CRC24 Optimization]
+**Learning:** For continuous data stream validation like RTCM3, replacing bit-by-bit CRC calculation with a precomputed 256-element lookup table vastly decreases CPU usage by converting an O(N * 8) nested loop operation into an O(N) single loop with array indexing.
+**Action:** Always favor lookup tables over explicit bit manipulations for checksum or hashing algorithms applied heavily on bitstreams.
 ## 2024-05-01 - Swift Compiler Crash on Ubuntu
 **Learning:** `swift build` and `swift test` commands for this Swift 6 project face compiler segmentation faults on Ubuntu 24.04 setups due to a `clang::RawComment::RawComment` crash originating from swift-docc-plugin/manifest compilation.
 **Action:** Use localized test scripts (omitting swiftpm) to verify core logic mathematically when encountering this crash, or test via an alternate environment.
