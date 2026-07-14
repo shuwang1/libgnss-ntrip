@@ -25,6 +25,11 @@ jobs:
       
     - name: Run tests
       run: swift test --enable-test-discovery --enable-code-coverage
+ # 2. Convert Swift's internal LLVM coverage data into standard lcov format
+    - name: Convert Coverage to LCOV
+      uses: maxep/spm-lcov-action@0.3.0
+      with:
+        output-file: ./coverage/lcov.info
       
     - name: Upload
       uses: codecov/codecov-action@v5
